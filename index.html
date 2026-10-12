@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <title>PharmD Graduation Sash | Sash Afrique</title>
 <meta name="description" content="Order your PharmD graduation sash, handwoven by Sash Afrique.">
@@ -73,6 +73,28 @@ button:disabled{opacity:.55;cursor:wait}
 .big{font-size:22px;color:var(--g)}
 .ban{background:var(--g);color:var(--k);padding:10px 20px;text-align:center;font-weight:700}
 @media(prefers-reduced-motion:no-preference){.opt .box{transition:outline-color .15s}}
+
+.hero{padding:22px 16px 22px}
+h1{font-size:clamp(30px,9.5vw,54px)}
+.brand{margin-bottom:16px}
+.cd{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:20px 0 8px;max-width:420px}
+.cd div{border:1px solid var(--g);padding:10px 4px 8px;text-align:center}
+.cd b{display:block;font:800 clamp(24px,8vw,34px)/1.1 "Playfair Display",Georgia,serif;color:var(--g);font-variant-numeric:tabular-nums}
+.cd span{font-size:12px;color:var(--m)}
+.hero .cdn{font-size:14px;color:var(--m)}
+.cl{border:2px solid var(--g);padding:22px;margin:26px 0}
+main{padding:8px 16px 130px}
+input[type=text],input[type=tel],textarea{min-height:50px}
+.rows .box{min-height:56px}
+button,.btn{min-height:50px}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--k);border-top:2px solid var(--g);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));z-index:10}
+.bar .in{max-width:780px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.bar .tt{flex:1;line-height:1.2}
+.bar .tt small{display:block;color:var(--m);font-size:12px;padding:0}
+.bar .tt b{font-size:20px;color:var(--g)}
+#go{width:auto;font-size:16px;padding:13px 24px}
+.pay button{min-height:40px}
+@media(min-width:700px){.hero{padding:36px 20px 30px}main{padding:12px 20px 130px}}
 </style>
 </head>
 <body>
@@ -80,10 +102,18 @@ button:disabled{opacity:.55;cursor:wait}
 <p class="brand">Sash Afrique</p>
 <h1>PharmD Graduation Sash</h1>
 <p>Handwoven in Ghana. Choose your design, add your name, and confirm your order by making payment.</p>
+<div id="cdw">
+<div class="cd" role="timer" aria-label="Time left to order"><div><b id="cdD">--</b><span>days</span></div><div><b id="cdH">--</b><span>hours</span></div><div><b id="cdM">--</b><span>minutes</span></div><div><b id="cdS">--</b><span>seconds</span></div></div>
+<p class="cdn">Orders close on 10 November 2026 at 11:59 pm (Ghana time).</p>
+</div>
 </div></header>
 <div class="weave" aria-hidden="true"></div>
-<div class="ban" id="ban" hidden></div>
 <main>
+<section class="cl" id="cl" hidden>
+<h2 style="font-size:30px;margin:0 0 8px">Orders are closed</h2>
+<p>The deadline for PharmD sash orders was 10 November 2026. To ask about a late order, message us on WhatsApp.</p>
+<a class="btn" href="https://wa.me/233240110854" target="_blank" rel="noopener">Message us on WhatsApp</a>
+</section>
 <form id="f" novalidate>
 
 <fieldset>
@@ -144,7 +174,6 @@ button:disabled{opacity:.55;cursor:wait}
 </section>
 
 <div class="err" id="er" role="alert" hidden></div>
-<button type="submit" id="go">Place order</button>
 </form>
 
 <section id="done" hidden>
@@ -154,30 +183,37 @@ button:disabled{opacity:.55;cursor:wait}
 <div><dt>Amount to pay</dt><dd class="big" id="amt"></dd></div>
 <div><dt>Mobile money number</dt><dd>0544136917<button type="button" class="alt" id="cp">Copy</button></dd></div>
 <div><dt>Account name</dt><dd>Sash Afrique Ltd</dd></div>
-<div><dt>Payment reference</dt><dd>PharmD</dd></div>
+<div><dt>Payment reference</dt><dd class="big" id="ref"></dd></div>
 </dl>
-<p>After paying, send us your payment proof on WhatsApp so we can confirm your order.</p>
+<p>Use your order ID as the payment reference so we can match your payment to your order. After paying, send us your payment proof on WhatsApp.</p>
 <p><a class="btn" id="wa" href="#" target="_blank" rel="noopener">Send proof on WhatsApp</a></p>
 <p class="hint" id="dn"></p>
 </section>
 </main>
 
+<div class="bar" id="bar"><div class="in"><div class="tt"><small>Sash total</small><b id="bt">GH₵0</b></div><button type="submit" form="f" id="go">Place order</button></div></div>
 <script>
 const API="https://script.google.com/macros/s/AKfycbwnDdoJ7k3B5_E81uQEEHnZBxHo4nHBv-h-jAQxaJKrIbZs7gAuVZRHvrIbqbm-ysykhw/exec";
-const CLOSES=""; // optional, e.g. "Orders close 30 November"
+const END=new Date("2026-11-10T23:59:59Z").getTime(); // Ghana time is GMT
 const PRICE={embroidery:120,woven:150},WA="233240110854";
 const $=s=>document.querySelector(s),f=$("#f"),v=n=>(f.elements[n].value||"").trim();
 const money=n=>"GH₵"+Number(n).toLocaleString("en-GH",{maximumFractionDigits:2});
 const NAMES={1:"White with Rx emblem",2:"White with personal quote",3:"Gold with personal quote",4:"Gold with Rx emblem"};
 let pct=0,okCode="";
-if(CLOSES){$("#ban").textContent=CLOSES;$("#ban").hidden=false}
+const z=n=>String(n).padStart(2,"0");
+function closed(){$("#cdw").hidden=true;$("#cl").hidden=false;f.hidden=true;$("#bar").hidden=true;clearInterval(timer)}
+function tick(){const ms=END-Date.now();if(ms<=0){closed();return false}
+  const s=Math.floor(ms/1000);
+  $("#cdD").textContent=Math.floor(s/86400);$("#cdH").textContent=z(Math.floor(s%86400/3600));
+  $("#cdM").textContent=z(Math.floor(s%3600/60));$("#cdS").textContent=z(s%60);return true}
+const timer=setInterval(tick,1000);
 function calc(){const b=PRICE[v("insc")]||0,d=okCode?b*pct/100:0;return{b,d,t:b-d}}
 function upd(){
   const q=["2","3"].includes(v("design"));$("#qg").hidden=!q;
   $("#lg").hidden=v("dl")!=="personal";
   const{b,d,t}=calc(),i=v("insc");
   $("#s1").textContent=i?(i==="woven"?"Woven":"Embroidery")+" inscription sash":"Sash";
-  $("#p1").textContent=money(b);$("#dr").hidden=!d;$("#p2").textContent="-"+money(d);$("#p3").textContent=money(t);
+  $("#p1").textContent=money(b);$("#dr").hidden=!d;$("#p2").textContent="-"+money(d);$("#p3").textContent=money(t);$("#bt").textContent=money(t);
 }
 f.addEventListener("change",upd);
 $("#quote").addEventListener("input",e=>$("#qc").textContent=e.target.value.length);
@@ -203,7 +239,7 @@ function check(){
 }
 const tok=Date.now()+"-"+Math.random().toString(36).slice(2);
 f.onsubmit=async e=>{
-  e.preventDefault();const er=$("#er"),x=check();
+  e.preventDefault();if(!tick())return;const er=$("#er"),x=check();
   if(x){er.textContent=x[0];er.hidden=false;x[1].focus();return}
   er.hidden=true;const g=$("#go");g.disabled=true;g.textContent="Placing order...";
   const p={token:tok,design:v("design"),designName:NAMES[v("design")],insc:v("insc"),name:v("name"),phone:v("phone"),
@@ -215,13 +251,13 @@ f.onsubmit=async e=>{
   }catch(x){er.textContent="We couldn't place your order: "+x.message+" Please try again.";er.hidden=false;g.disabled=false;g.textContent="Place order"}
 };
 function finish(r,p){
-  f.hidden=true;$("#done").hidden=false;$("#oid").textContent=r.orderId;$("#amt").textContent=money(r.total);
+  f.hidden=true;$("#bar").hidden=true;$("#done").hidden=false;$("#oid").textContent=r.orderId;$("#ref").textContent=r.orderId;$("#amt").textContent=money(r.total);
   $("#dn").textContent=p.dl==="school"?"Your sash will be delivered to the school together with the other orders.":"We will contact you on "+p.phone+" to confirm your delivery cost.";
   $("#wa").href="https://wa.me/"+WA+"?text="+encodeURIComponent("Hello Sash Afrique, I have paid for my PharmD sash.\nOrder ID: "+r.orderId+"\nName: "+p.name+"\nAmount: "+money(r.total));
   scrollTo({top:0});
 }
 $("#cp").onclick=async e=>{try{await navigator.clipboard.writeText("0544136917");e.target.textContent="Copied"}catch(x){e.target.textContent="Select and copy"}};
-upd();
+upd();tick();
 </script>
 </body>
 </html>
